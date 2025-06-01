@@ -21,7 +21,7 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "su226.creeperconfetti.Mod"
+      "su226.creeperconfetti.CreeperConfetti"
     ],
     "client": [
       "su226.creeperconfetti.ModClient"

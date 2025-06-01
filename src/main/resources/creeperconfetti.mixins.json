@@ -6,7 +6,10 @@
   "mixins": [
     "CreeperEntityMixin"
   ],
-  "client": [],
+  "client": [
+    "client.CreeperEntityClientMixin",
+    "client.ExplosionSoundMixin"
+  ],
   "server": [],
   "injectors": {
     "defaultRequire": 1

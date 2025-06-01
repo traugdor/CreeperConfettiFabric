@@ -3,13 +3,9 @@ package su226.creeperconfetti.mixin;
 import net.minecraft.entity.mob.CreeperEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import su226.creeperconfetti.Config;
-import su226.creeperconfetti.ModClient;
 
 import java.util.Random;
 
@@ -35,68 +31,14 @@ public abstract class CreeperEntityMixin {
     Random rand = new Random(that.getUuid().getMostSignificantBits());
     if (rand.nextDouble() < Config.chance) {
       Vec3d pos = that.getPos();
-      boolean charged = that.isCharged();
-      if (that.getWorld().isClient()) {
-        if (rand.nextDouble() < Config.soundChance) {
-          // Use CONFETTI sound
-          that.getWorld().playSound(
-              null, // Entity source
-              pos.x, pos.y, pos.z, // Position
-              ModClient.CONFETTI, // Sound event
-              SoundCategory.HOSTILE, // Category
-              2.0F, 1.0F // Volume and pitch
-          );
-        }
-        // Play the firework twinkle sound
-        that.getWorld().playSound(
-            null, // Entity source
-            pos.x, pos.y, pos.z, // Position
-            SoundEvents.ENTITY_FIREWORK_ROCKET_TWINKLE, // Sound event
-            SoundCategory.HOSTILE, // Category
-            1.0F, 1.0F // Volume and pitch
-        );
-        // Spawn firework particles
-        for (int i = 0; i < 50; i++) {
-          double offsetX = rand.nextGaussian();
-          double offsetY = rand.nextGaussian();
-          double offsetZ = rand.nextGaussian();
-          that.getWorld().addParticleClient(
-              ParticleTypes.FIREWORK,
-              pos.x, pos.y + 0.5, pos.z,
-              offsetX * 0.15, offsetY * 0.15, offsetZ * 0.15
-          );
-        }
-        
-        // Add more particles and sounds for charged creepers
-        if (charged) {
-          // Play explosion sound for charged creepers
-          that.getWorld().playSound(
-              null, // Entity source
-              pos.x, pos.y, pos.z, // Position
-              SoundEvents.ENTITY_GENERIC_EXPLODE, // Sound event
-              SoundCategory.HOSTILE, // Category
-              2.0F, 0.5F // Volume and pitch
-          );
-          
-          // Add flash particles for charged creepers
-          for (int i = 0; i < 30; i++) {
-            double offsetX = rand.nextGaussian();
-            double offsetY = rand.nextGaussian();
-            double offsetZ = rand.nextGaussian();
-            that.getWorld().addParticleClient(
-                ParticleTypes.FLASH,
-                pos.x, pos.y + 2.5, pos.z,
-                offsetX * 0.1, offsetY * 0.1, offsetZ * 0.1
-            );
-          }
-        }
-      } else {
+      // Client-side effects (particles and sounds) are now handled in the client-only mixin
+      if (!that.getWorld().isClient()) {
         // Server-side logic
         // Create a fake explosion with no block destruction
         that.getWorld().createExplosion(
             that, // Entity causing explosion
             pos.x, pos.y, pos.z, // Position
-            0, // Power (0 for no destruction)
+            Config.damage, // Power
             false, // Create fire?
             World.ExplosionSourceType.MOB // Explosion source type
         );
