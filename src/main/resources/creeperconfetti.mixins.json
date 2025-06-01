@@ -6,9 +6,7 @@
   "mixins": [
     "CreeperEntityMixin"
   ],
-  "client": [
-    "client.CreeperEntityClientMixin"
-  ],
+  "client": [],
   "server": [],
   "injectors": {
     "defaultRequire": 1
