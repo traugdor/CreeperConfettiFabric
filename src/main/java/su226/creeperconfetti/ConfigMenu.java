@@ -18,7 +18,7 @@ public class ConfigMenu implements ModMenuApi {
   @Override
   public ConfigScreenFactory<?> getModConfigScreenFactory() {
     if (!FabricLoader.getInstance().isModLoaded("cloth-config2")) {
-      Mod.LOG.warn("Couldn't find Cloth Config, config menu disabled!");
+      ConsoleLogger.LOGGER.warn("Couldn't find Cloth Config, config menu disabled!");
       return parent -> null;
     }
     return parent -> createConfigScreen(parent);

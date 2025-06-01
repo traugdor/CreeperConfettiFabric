@@ -9,5 +9,6 @@ public class ModClient implements ClientModInitializer {
   @Override
   public void onInitializeClient() {
     // The sounds are now registered in ModSounds
+    ConfigSync.registerClient();
   }
 }
