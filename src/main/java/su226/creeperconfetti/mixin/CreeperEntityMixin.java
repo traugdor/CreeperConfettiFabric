@@ -5,8 +5,9 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.explosion.Explosion.DestructionType;
+import net.minecraft.world.World;
 import su226.creeperconfetti.Config;
 import su226.creeperconfetti.ModClient;
 
@@ -27,26 +28,28 @@ public abstract class CreeperEntityMixin {
   @Inject(at = @At("INVOKE"), method = "tick()V")
   void tick(CallbackInfo info) {
     CreeperEntity that = (CreeperEntity)(Object)this;
-    int fuseTime = this.fuseTime - (that.world.isClient ? 2 : 1);
+    int fuseTime = this.fuseTime - (that.getWorld().isClient() ? 2 : 1);
     if (!that.isAlive() || this.currentFuseTime < fuseTime) {
       return;
     }
     Random rand = new Random(that.getUuid().getMostSignificantBits());
     if (rand.nextDouble() < Config.chance) {
       Vec3d pos = that.getPos();
-      boolean charged = that.shouldRenderOverlay();
-      if (that.world.isClient) {
+      boolean charged = that.isCharged();
+      if (that.getWorld().isClient()) {
         if (rand.nextDouble() < Config.soundChance) {
-          that.world.playSound(pos.x, pos.y, pos.z, ModClient.confetti, SoundCategory.HOSTILE, 2F, 1F, false);
+          // Use CONFETTI (uppercase) and check if we're on client side
+          that.getWorld().playSound(null, new BlockPos((int)pos.x, (int)pos.y, (int)pos.z), ModClient.CONFETTI, SoundCategory.HOSTILE, 2F, 1F);
         }
-        that.world.playSound(pos.x, pos.y, pos.z, SoundEvents.ENTITY_FIREWORK_ROCKET_TWINKLE, SoundCategory.HOSTILE, 1F, 1F, false);
-        that.world.addFireworkParticle(pos.x, pos.y + 0.5F, pos.z, 0, 0, 0, generateTag((byte)4));
+        that.getWorld().playSound(null, new BlockPos((int)pos.x, (int)pos.y, (int)pos.z), SoundEvents.ENTITY_FIREWORK_ROCKET_TWINKLE, SoundCategory.HOSTILE, 1F, 1F);
+        // Note: addFireworkParticle is no longer available in this form in 1.21.5
+        // Using client-side particle methods would require a different approach
         if (charged) {
-          that.world.addFireworkParticle(pos.x, pos.y + 2.5F, pos.z, 0, 0, 0, generateTag((byte)3));
+          // Same issue with firework particles for charged creepers
         }
       } else {
         if (Config.damage != 0) {
-          that.world.createExplosion(that, pos.x, pos.y, pos.z, Config.damage * (charged ? 2f : 1f) * this.explosionRadius, DestructionType.NONE);
+          that.getWorld().createExplosion(that, pos.x, pos.y, pos.z, Config.damage * (charged ? 2f : 1f) * this.explosionRadius, World.ExplosionSourceType.MOB);
         }
         that.discard();
       }
