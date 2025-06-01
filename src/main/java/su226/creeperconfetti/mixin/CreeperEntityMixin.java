@@ -1,11 +1,13 @@
 package su226.creeperconfetti.mixin;
 
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.entity.mob.CreeperEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import su226.creeperconfetti.Config;
@@ -38,18 +40,59 @@ public abstract class CreeperEntityMixin {
       boolean charged = that.isCharged();
       if (that.getWorld().isClient()) {
         if (rand.nextDouble() < Config.soundChance) {
-          // Use CONFETTI (uppercase) and check if we're on client side
-          that.getWorld().playSound(null, new BlockPos((int)pos.x, (int)pos.y, (int)pos.z), ModClient.CONFETTI, SoundCategory.HOSTILE, 2F, 1F);
+          // Use CONFETTI sound with MinecraftClient's sound manager
+          MinecraftClient.getInstance().getSoundManager().play(
+              PositionedSoundInstance.master(ModClient.CONFETTI, 1.0F)
+          );
         }
-        that.getWorld().playSound(null, new BlockPos((int)pos.x, (int)pos.y, (int)pos.z), SoundEvents.ENTITY_FIREWORK_ROCKET_TWINKLE, SoundCategory.HOSTILE, 1F, 1F);
-        // Note: addFireworkParticle is no longer available in this form in 1.21.5
-        // Using client-side particle methods would require a different approach
+        // Play the firework twinkle sound
+        MinecraftClient.getInstance().getSoundManager().play(
+            PositionedSoundInstance.master(SoundEvents.ENTITY_FIREWORK_ROCKET_TWINKLE, 1.0F)
+        );
+        // Spawn firework particles using the correct method for 1.21.5
+        for (int i = 0; i < 50; i++) {
+          double offsetX = (rand.nextDouble() - 0.5) * 2;
+          double offsetY = (rand.nextDouble() - 0.5) * 2;
+          double offsetZ = (rand.nextDouble() - 0.5) * 2;
+          // Use addParticleClient which is the correct method for 1.21.5
+          that.getWorld().addParticleClient(
+              ParticleTypes.FIREWORK,
+              pos.x, pos.y + 0.5, pos.z,
+              offsetX * 0.15, offsetY * 0.15, offsetZ * 0.15);
+        }
+        
+        // Add more particles and sounds for charged creepers
         if (charged) {
-          // Same issue with firework particles for charged creepers
+          // Play explosion sound for charged creepers
+          MinecraftClient.getInstance().getSoundManager().play(
+              PositionedSoundInstance.master(SoundEvents.ENTITY_GENERIC_EXPLODE, 2.0F)
+          );
+          
+          // Add flash particles for charged creepers
+          for (int i = 0; i < 30; i++) {
+            double offsetX = (rand.nextDouble() - 0.5) * 3;
+            double offsetY = (rand.nextDouble() - 0.5) * 3;
+            double offsetZ = (rand.nextDouble() - 0.5) * 3;
+            that.getWorld().addParticleClient(
+                ParticleTypes.FLASH,
+                pos.x, pos.y + 2.5, pos.z,
+                offsetX * 0.1, offsetY * 0.1, offsetZ * 0.1);
+          }
         }
       } else {
         if (Config.damage != 0) {
-          that.getWorld().createExplosion(that, pos.x, pos.y, pos.z, Config.damage * (charged ? 2f : 1f) * this.explosionRadius, World.ExplosionSourceType.MOB);
+          // For server-side, create explosion with proper damage
+          float power = Config.damage * (charged ? 2f : 1f) * this.explosionRadius;
+          // Use the correct createExplosion method with the proper parameters
+          that.getWorld().createExplosion(
+              that,                        // Entity source
+              null,                        // DamageSource (null uses default)
+              null,                        // Explosion behavior callback
+              pos.x, pos.y, pos.z,          // Position
+              power,                        // Power/radius
+              false,                        // Create fire?
+              World.ExplosionSourceType.MOB  // Explosion source type
+          );
         }
         that.discard();
       }
