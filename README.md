@@ -11,4 +11,6 @@ There are 3 config options available:
 - Ratio of damage if a creeper will explode into confetti.
 - Chance to play sound effect if a creeper will explode into confetti.
 
+You must install in both the client and server for it to work in SMP.
+
 Code licensed with MIT, feel free to use in modpacks.
