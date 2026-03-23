@@ -7,7 +7,7 @@ import net.minecraft.client.sound.SoundManager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import su226.creeperconfetti.Config;
 import su226.creeperconfetti.CreeperExplosionTracker;
 
@@ -17,13 +17,13 @@ import su226.creeperconfetti.CreeperExplosionTracker;
 @Environment(EnvType.CLIENT)
 @Mixin(SoundManager.class)
 public class ExplosionSoundMixin {
-    @Inject(method = "play(Lnet/minecraft/client/sound/SoundInstance;)V", at = @At("HEAD"), cancellable = true)
-    private void onPlay(SoundInstance sound, CallbackInfo ci) {
+    @Inject(method = "play", at = @At("HEAD"), cancellable = true)
+    private void onPlay(SoundInstance sound, CallbackInfoReturnable<Object> cir) {
         String soundId = sound.getId().toString();
         if (soundId.equals("minecraft:entity.generic.explode")) {
             // Only cancel the explosion sound if it's from a creeper that's being handled by our mod
             if (CreeperExplosionTracker.isCreeperExploding() && Config.chance > 0) {
-                ci.cancel();
+                cir.setReturnValue(null);
             }
         }
     }

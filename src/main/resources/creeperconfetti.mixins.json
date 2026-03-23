@@ -8,7 +8,8 @@
   ],
   "client": [
     "client.CreeperEntityClientMixin",
-    "client.ExplosionSoundMixin"
+    "client.ExplosionSoundMixin",
+    "client.ClientWorldAccessor"
   ],
   "server": [],
   "injectors": {

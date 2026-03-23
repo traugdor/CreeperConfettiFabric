@@ -5,6 +5,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import net.minecraft.entity.Entity;
 import su226.creeperconfetti.Config;
 
 import java.util.Random;
@@ -24,18 +25,19 @@ public abstract class CreeperEntityMixin {
   @Inject(at = @At("INVOKE"), method = "tick()V")
   void tick(CallbackInfo info) {
     CreeperEntity that = (CreeperEntity)(Object)this;
-    int fuseTime = this.fuseTime - (that.getWorld().isClient() ? 2 : 1);
+    Entity entity = (Entity)(Object)this;
+    int fuseTime = this.fuseTime - (entity.getEntityWorld().isClient() ? 2 : 1);
     if (!that.isAlive() || this.currentFuseTime < fuseTime) {
       return;
     }
     Random rand = new Random(that.getUuid().getMostSignificantBits());
     if (rand.nextDouble() < Config.chance) {
-      Vec3d pos = that.getPos();
+      Vec3d pos = new Vec3d(entity.getX(), entity.getY(), entity.getZ());
       // Client-side effects (particles and sounds) are now handled in the client-only mixin
-      if (!that.getWorld().isClient()) {
+      if (!entity.getEntityWorld().isClient()) {
         // Server-side logic
         // Create a fake explosion with no block destruction
-        that.getWorld().createExplosion(
+        entity.getEntityWorld().createExplosion(
             that, // Entity causing explosion
             pos.x, pos.y, pos.z, // Position
             Config.damage, // Power
