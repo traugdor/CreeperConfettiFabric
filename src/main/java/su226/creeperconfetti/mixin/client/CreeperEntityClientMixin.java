@@ -15,6 +15,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import su226.creeperconfetti.Config;
+import su226.creeperconfetti.CreeperExplosionTracker;
 import su226.creeperconfetti.ModSounds;
 
 import java.util.Random;
@@ -43,6 +44,9 @@ public abstract class CreeperEntityClientMixin {
     
     // Only proceed with the chance configured
     if (rand.nextDouble() < Config.chance) {
+      // Set the flag FIRST to catch the explosion sound
+      CreeperExplosionTracker.setCreeperExplosion(that.getUuid());
+      
       Vec3d pos = that.getPos();
       boolean charged = that.isCharged();
       
